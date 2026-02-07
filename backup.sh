@@ -100,7 +100,7 @@ while true; do
             if smbc "cd \"$DEST_PATH\"" >/dev/null 2>&1; then
                 TEST_FILE="$(mktemp)"
                 echo "write test" > "$TEST_FILE"
-                if smbc "cd \"$DEST_PATH\"; put \"$TEST_FILE\" \"test_$(hostname)\"" >/dev/null 2>&1; then
+                if smbc "cd \"$DEST_PATH\"; put \"$TEST_FILE\" \"test_$(hostname)_$USER\"" >/dev/null 2>&1; then
                     break
                 else
                     echo "Destination is not writable"
@@ -113,7 +113,7 @@ while true; do
             # Make sure destination exists and is writable
             DEST_TYPE="normal"
             if [ -d "$DEST" ]; then
-                if echo "write test" > "$DEST/test_$(hostname)" 2>&1; then
+                if echo "write test" > "$DEST/test_$(hostname)_$USER" 2>&1; then
                     break
                 else
                     echo "Destination is not writable"
@@ -139,7 +139,7 @@ EOF
 
 # Setup temp working directory where we will copy saves to create tar
 DATESTRING="$(date '+%Y%m%d_%I%M%p')"
-BACKUP_NAME="$(hostname)_$DATESTRING"
+BACKUP_NAME="$(hostname)_${USER}_${DATESTRING}"
 WORKDIR="$SCRIPT_DIR/work"
 mkdir -p "$WORKDIR"
 trap "rm -rf \"$WORKDIR\"" EXIT
@@ -158,6 +158,7 @@ COMPRESS=".gz"
 oldcwd="$(pwd)"
 cd "$WORKDIR"
 echo "test" > test.txt
+rm -f test.txt.xz
 if xz -z -T0 test.txt >/dev/null 2>&1; then
     COMPRESS=".xz"
 fi
