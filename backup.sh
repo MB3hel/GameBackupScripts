@@ -166,8 +166,9 @@ cd "$oldcwd"
 # Make tar & compress
 oldcwd="$(pwd)"
 cd "$WORKDIR"
-echo "Making compressed tar"
+echo "Making tar"
 tar -cf "$BACKUP_NAME.tar" "$BACKUP_NAME/"
+echo "Compressing"
 case "$COMPRESS" in
     ".xz")
         xz -z -T0 "$BACKUP_NAME.tar"
