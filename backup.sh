@@ -13,7 +13,8 @@ if ! [ -t 0 ]; then
 fi
 
 # Run in same directory as this script
-cd "$(dirname "$(realpath "$0")")"
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+cd "$SCRIPT_DIR"
 ####################################################################################################
 
 
@@ -137,17 +138,20 @@ EOF
 ####################################################################################################
 
 # Setup temp working directory where we will copy saves to create tar
-WORKDIR="$(mktemp -d)"
-trap "rm -rf \"$WORKDIR\"" EXIT
 DATESTRING="$(date '+%Y%m%d_%I%M%p')"
 BACKUP_NAME="$(hostname)_$DATESTRING"
+WORKDIR="$SCRIPT_DIR/work"
+mkdir -p "$WORKDIR"
+trap "rm -rf \"$WORKDIR\"" EXIT
 mkdir "$WORKDIR/$BACKUP_NAME"
 
-# TODO: Make real backup
-echo "Test A" > "$WORKDIR/$BACKUP_NAME/a.txt"
-echo "Test B" > "$WORKDIR/$BACKUP_NAME/b.txt"
-mkdir "$WORKDIR/$BACKUP_NAME/c"
-echo "Test C" > "$WORKDIR/$BACKUP_NAME/c/c.txt"
+# Make backup
+oldcwd="$(pwd)"
+cd "$WORKDIR/$BACKUP_NAME"
+for game_script in "$SCRIPT_DIR/games/"*.sh; do
+    . "$game_script"
+done
+cd "$oldcwd"
 
 # Choose compression method (busybox for windows has xz, but it can only decompress)
 COMPRESS=".gz"
@@ -162,6 +166,7 @@ cd "$oldcwd"
 # Make tar & compress
 oldcwd="$(pwd)"
 cd "$WORKDIR"
+echo "Making compressed tar"
 tar -cf "$BACKUP_NAME.tar" "$BACKUP_NAME/"
 case "$COMPRESS" in
     ".xz")
