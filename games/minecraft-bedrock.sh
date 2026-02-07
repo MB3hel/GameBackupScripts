@@ -15,9 +15,12 @@ if [ $IS_WIN -eq 1 ] && [ -d "$LOCALAPPDATA/Packages/Microsoft.MinecraftUWP_8wek
 fi
 
 # Windows GDK version install
-if [ $IS_WIN -eq 1 ] && [ -d "$APPDATA/Minecraft Bedrock/users/shared/games/com.mojang" ]; then
-    VARIANT="UWP"
-    do_backup "$APPDATA/Minecraft Bedrock/users/shared/games/com.mojang"
+if [ $IS_WIN -eq 1 ] && [ -d "$APPDATA/Minecraft Bedrock/users/" ]; then
+    VARIANT="GDK"
+    user_dir="$(find "$APPDATA/Minecraft Bedrock/users/" -mindepth 1 -maxdepth 1 -type d | grep -v -i 'shared' | head -n 1)"
+    if [ -n "$user_dir" ] && [ -d "$user_dir" ]; then
+        do_backup "$user_dir/games/com.mojang/minecraftWorlds"
+    fi
 fi
 
 # Linux MCPELauncher Flatpak
