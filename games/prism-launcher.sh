@@ -18,6 +18,7 @@ do_backup(){
             cp -r "$saves_dir" "$(basename "$instance_dir")_saves"
         fi
     done
+    
     # Restore cwd
     cd "$oldcwd"
 }
