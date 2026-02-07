@@ -71,7 +71,8 @@ case "$(uname -o)" in
         IS_WIN="1"
         CONFIG_DIR="$APPDATA/GameBackupScripts/"
         echo "WARNING: busybox on windows can't handle long paths."
-        echo "         Store this script somewhere short like C:/gbs/"
+        echo "         This may result in failures backing up some game saves"
+        echo "         Using MSYS2 instead is highly recommended."
         ;;
     Darwin)
         IS_MAC="1"
