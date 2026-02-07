@@ -29,7 +29,7 @@
 # description: Backup Minecraft Java Edition saves from Prism Launcher instances
 ####################################################################################################
 
-GAME="Minecraft_PrismLauncher"
+GAME="MCPrism"
 VARIANT=""
 
 # $1 = game install path
@@ -69,7 +69,7 @@ fi
     
 # Linux flatpak install
 if [ $IS_NIX -eq 1 ] && [ -d "$HOME/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/instances/" ]; then
-    VARIANT="_Flatpak"
+    VARIANT="FP"
     do_backup "$HOME/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/instances/"
 fi
  

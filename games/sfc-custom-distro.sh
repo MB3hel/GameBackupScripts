@@ -31,7 +31,7 @@
 #              use to anyone except me :)
 ####################################################################################################
 
-GAME="SFC_CustomDistro"
+GAME="SFC"
 VARIANT=""
 
 # $1 = game install path
@@ -65,7 +65,7 @@ if [ $IS_NIX -eq 1 ] && [ -d "$HOME/.var/app/com.usebottles.bottles/data/bottles
     find "$HOME/.var/app/com.usebottles.bottles/data/bottles/bottles/" -maxdepth 1 -mindepth 1 -type d -print0 | while IFS= read -r -d '' bottle_dir; do
         bottle_name="$(basename "$bottle_dir")"
         if [ -d "$bottle_dir/drive_c/StarfleetCommandGames/" ]; then
-            VARIANT="_Bottles_Flatpak_${bottle_name}"
+            VARIANT="Bottle${bottle_name}FP"
             do_backup "$bottle_dir/drive_c/StarfleetCommandGames/"
         fi
     done

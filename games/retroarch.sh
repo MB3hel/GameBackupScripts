@@ -53,7 +53,7 @@ fi
     
 # Linux flatpak install
 if [ $IS_NIX -eq 1 ] && [ -d "$HOME/.var/app/org.libretro.RetroArch/config/retroarch/saves/" ]; then
-    VARIANT="_Flatpak"
+    VARIANT="FP"
     do_backup "$HOME/.var/app/org.libretro.RetroArch/config/retroarch/saves/"
 fi
  

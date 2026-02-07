@@ -63,10 +63,16 @@ CONFIG_DIR=""
 case "$(uname -o)" in
     # MSYS2 -> Msys
     # Busybox -> MS/Windows
-    Msys|MS/Windows)
-       IS_WIN="1"
-       CONFIG_DIR="$APPDATA/GameBackupScripts/"
-       ;;
+    Msys)
+        IS_WIN="1"
+        CONFIG_DIR="$APPDATA/GameBackupScripts/"
+        ;;
+    MS/Windows)
+        IS_WIN="1"
+        CONFIG_DIR="$APPDATA/GameBackupScripts/"
+        echo "WARNING: busybox on windows can't handle long paths."
+        echo "         Store this script somewhere short like C:/gbs/"
+        ;;
     Darwin)
         IS_MAC="1"
         CONFIG_DIR="" # TODO

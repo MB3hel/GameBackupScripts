@@ -29,7 +29,7 @@
 # description: Backup Minecraft Java Edition game saves from official launcher
 ####################################################################################################
 
-GAME="Minecraft_Java"
+GAME="MCJava"
 VARIANT=""
 
 # $1 = game install path

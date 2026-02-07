@@ -30,7 +30,7 @@
 #              of the windows game. Also supports the unofficial MCPELuancher on Linux
 ####################################################################################################
 
-GAME="Minecraft_Bedrock"
+GAME="MCBedrock"
 VARIANT=""
 
 # $1 = game install path
@@ -57,6 +57,6 @@ fi
 
 # Linux MCPELauncher Flatpak
 if [ $IS_NIX -eq 1 ] && [ -d "$HOME/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/games/com.mojang/minecraftWorlds" ]; then
-    VARIANT="_MCPELauncher_Flatpak"
+    VARIANT="3rdPartyFP"
     do_backup "$HOME/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/games/com.mojang/minecraftWorlds"
 fi

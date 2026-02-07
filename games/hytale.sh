@@ -53,7 +53,7 @@ fi
     
 # Linux flatpak install
 if [ $IS_NIX -eq 1 ] && [ -d "$HOME/.var/app/com.hypixel.HytaleLauncher/data/Hytale/UserData/Saves/" ]; then
-    VARIANT="_Flatpak"
+    VARIANT="FP"
     do_backup "$HOME/.var/app/com.hypixel.HytaleLauncher/data/Hytale/UserData/Saves/"
 fi
  
