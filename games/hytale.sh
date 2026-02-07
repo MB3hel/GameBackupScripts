@@ -3,7 +3,6 @@ VARIANT=""
 
 # $1 = game install path
 do_backup(){
-    # Setup for backup
     echo "Found ${GAME}${VARIANT}"
     cp -r "$1" "${GAME}${VARIANT}"
 }
