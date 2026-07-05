@@ -48,6 +48,23 @@ do_backup(){
         if [ -n "$saves_dir" ]; then
             cp -r "$saves_dir" "$(basename "$instance_dir")_saves"
         fi
+
+        # Try some other folders for modded instances too
+        # Some mods save data outside the world save folder
+        xaero_wp_dir="$(dirname "$saves_dir")/XaeroWaypoints"
+        if [ -d "$xaero_wp_dir" ]; then
+            cp -r "$xaero_wp_dir" "$(basename "$instance_dir")_XaeroWaypoints"
+        fi
+        xaero_map_dir="$(dirname "$saves_dir")/XaeroWorldMap"
+        if [ -d "$xaero_map_dir" ]; then
+            cp -r "$xaero_map_dir" "$(basename "$instance_dir")_XaeroWorldMap"
+        fi
+
+        # Modded often has lots of keybinds that might be relevant to backup
+        options_txt="$(dirname "$saves_dir")/options.txt"
+        if [ -f "$options_txt" ]; then
+            cp "$options_txt" "$(basename "$instance_dir")_options.txt"
+        fi
     done
     
     # Restore cwd
