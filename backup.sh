@@ -50,6 +50,27 @@ cd "$SCRIPT_DIR"
 ####################################################################################################
 
 
+####################################################################################################
+# Argument parsing
+####################################################################################################
+
+usage(){
+    echo "backup.sh [--devtest]"
+    echo "    --devtest: DO NOT USE THIS. Use a test backup instead of a real one"
+    exit 1
+}
+
+[ $# -gt 1 ] && usage
+if [ "$1" = "" ]; then
+    DEVTEST=0
+elif [ "$1" = "--devtest" ]; then
+    DEVTEST=1
+else
+    usage
+fi
+
+####################################################################################################
+
 
 ####################################################################################################
 # OS Detection
@@ -93,6 +114,9 @@ if [ $IS_MAC -eq 1 ]; then
     echo "MacOS is not currently supported" >&2
     exit 1
 fi
+
+# Load other util scripts
+. "$SCRIPT_DIR/utils/smb.sh"
 ####################################################################################################
 
 
@@ -101,21 +125,10 @@ fi
 # Destination selection
 ####################################################################################################
 # Load saved settings (if any)
-DEST=""                 # 'Normal' path (local file or smb://SERVER/SHARE/path/to/destination)
-DEST_SERVER=""          # SMB server name
-DEST_SHARE=""           # SMB share name
-DEST_PATH=""            # SMB path
-DEST_USER=""            # SMB username
-DEST_PASS=""            # SMB password
-DEST_TYPE=""            # normal or smb
+DEST=""                 # Destination path (either local or smb)
 mkdir -p "$CONFIG_DIR"
 [ -f "$CONFIG_DIR/settings.sh" ] && . "$CONFIG_DIR/settings.sh"
 
-# smbclient wrapper to run commands
-# Argument is passed to -c flag
-smbc(){
-    smbclient "//$DEST_SERVER/$DEST_SHARE" -U "$DEST_USER%$DEST_PASS" -c "$1"
-}
 
 # Prompt for settings
 while true; do
@@ -127,46 +140,31 @@ while true; do
     case "$DEST" in
         "")
             ;;
-        "smb://"*)
-            DEST_TYPE="smb"
-            DEST_NOPREFIX="$(echo "$DEST" | sed 's#smb://##g')"
-            DEST_SERVER="$(echo "$DEST_NOPREFIX" | cut -d/ -f1)"
-            DEST_SHARE="$(echo "$DEST_NOPREFIX" | cut -d/ -f2)"
-            DEST_PATH="$(echo "$DEST_NOPREFIX" | sed "s#$DEST_SERVER/$DEST_SHARE/##g")"
-            read -p "SMB User: " DEST_USER
-            read -p "SMB Pass: " -s DEST_PASS
+        "smb://"*|"\\"*|"//"*)
+            CP="smb-cp"
+            smb-auth "$DEST"
             echo ""
-            if smbc "cd \"$DEST_PATH\"" >/dev/null 2>&1; then
-                TEST_FILE="$(mktemp)"
-                echo "write test" > "$TEST_FILE"
-                if smbc "cd \"$DEST_PATH\"; put \"$TEST_FILE\" \"test_$(hostname)_$USER\"" >/dev/null 2>&1; then
-                    break
-                else
-                    echo "Destination is not writable"
-                fi
-            else
-                echo "Destination does not exist or credentials are incorrect"
-            fi
             ;;
         *)
-            # Make sure destination exists and is writable
-            DEST_TYPE="normal"
-            if [ -d "$DEST" ]; then
-                if echo "write test" > "$DEST/test_$(hostname)_$USER" 2>&1; then
-                    break
-                else
-                    echo "Destination is not writable"
-                fi
-            else
-                echo "Destination does not exist"
-            fi
+            CP="cp"
             ;;
     esac
+
+    # Make sure we can write a file into the destination
+    TEST_FILE="$(mktemp)"
+    echo "write test" > "$TEST_FILE"
+    if "$CP" "$TEST_FILE" "$DEST/test_$(hostname)_$USER" > /dev/null 2>&1; then
+        break
+    else
+        echo "Destination is not writable, does not exist, or credentials are incorrect."
+    fi
 done
+
 
 # Save settings
 cat << EOF > "$CONFIG_DIR/settings.sh"
 DEST="$DEST"
+SMB_USER="$SMB_USER"
 EOF
 ####################################################################################################
 
@@ -187,9 +185,16 @@ mkdir "$WORKDIR/$BACKUP_NAME"
 # Make backup
 oldcwd="$(pwd)"
 cd "$WORKDIR/$BACKUP_NAME"
-for game_script in "$SCRIPT_DIR/games/"*.sh; do
-    . "$game_script"
-done
+if [ $DEVTEST -eq 1 ]; then
+    # Development test backup (small and quick to create and copy)
+    # Used to test file transfer and script procedure. Not backup of specific games
+    echo "Hello, backup!" > test_backup.txt
+else
+    # Not a devtest. Run a real backup of each game
+    for game_script in "$SCRIPT_DIR/games/"*.sh; do
+        . "$game_script"
+    done
+fi
 cd "$oldcwd"
 
 # Choose compression method (busybox for windows has xz, but it can only decompress)
@@ -224,27 +229,12 @@ esac
 cd "$oldcwd"
 
 # Move backup to destination
-case "$DEST_TYPE" in
-    normal)
-        if ! cp "$WORKDIR/$BACKUP_NAME.tar$COMPRESS" "$DEST/"; then
-            echo "Failed to save backup"
-            exit 1
-        fi
-        ;;
-    smb)
-        if ! smbc "cd \"$DEST_PATH\"; put \"$WORKDIR/$BACKUP_NAME.tar$COMPRESS\" \"$BACKUP_NAME.tar$COMPRESS\""; then
-            echo "Failed to save backup"
-            exit 1
-        fi
-        ;;
-    *)
-        echo "Uknonwn destination type. This is a script bug!!!"
-        echo "No backup has been saved!!!"
-        exit 1
-        ;;
-esac
+if ! "$CP" "$WORKDIR/$BACKUP_NAME.tar$COMPRESS" "$DEST/$BACKUP_NAME.tar$COMPRESS" > /dev/null 2>&1; then
+    echo "Failed to save backup"
+    exit 1
+fi
+
 echo "Backup complete!"
-# TODO: Pause before exit
 
 ####################################################################################################
 
